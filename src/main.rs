@@ -13,6 +13,7 @@ fn main() -> std::io::Result<()> {
         eprintln!("Usage:");
         eprintln!("  --ping x.x.x.x:9999 (to send 'ping' and keep listening)");
         eprintln!("  --pong 9999         (to receive 'ping' and respond with 'pong')");
+        eprintln!("  --dong x.x.x.x:9999 (to send 'dong' every second)");
         exit(1);
     }
 
@@ -27,8 +28,13 @@ fn main() -> std::io::Result<()> {
             let port = &args[2];
             receive_pong(port)
         }
+        "--dong" => {
+            // Dong mode: send 'dong' messages every second to the specified address
+            let address = &args[2];
+            send_dong(address)
+        }
         _ => {
-            eprintln!("Invalid mode specified. Use --ping or --pong.");
+            eprintln!("Invalid mode specified. Use --ping, --pong, or --dong.");
             exit(1);
         }
     }
@@ -89,5 +95,22 @@ fn receive_pong(port: &str) -> std::io::Result<()> {
             }
             println!("Finished sending 'pong' messages to {}", src);
         }
+    }
+}
+
+// Function to continuously send 'dong' messages every second
+fn send_dong(server_address: &str) -> std::io::Result<()> {
+    // Create a socket bound to a local ephemeral port
+    let socket = UdpSocket::bind("0.0.0.0:0")?;
+    println!("Sending 'dong' messages to {} every second...", server_address);
+
+    // Continuously send 'dong' messages
+    loop {
+        let message = "dong";
+        socket.send_to(message.as_bytes(), server_address)?;
+        println!("Sent '{}' to {}", message, server_address);
+
+        // Wait for 1 second before sending the next 'dong'
+        thread::sleep(Duration::from_secs(1));
     }
 }
